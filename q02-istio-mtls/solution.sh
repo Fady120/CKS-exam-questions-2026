@@ -27,6 +27,7 @@ spec:
     mode: STRICT
 EOF
 
+mkdir -p /tmp/cks-q02
 cat <<'EOF' > /tmp/cks-q02/peer-authentication.yaml
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
@@ -40,9 +41,13 @@ EOF
 
 echo ""
 echo "$ kubectl apply -f /tmp/cks-q02/peer-authentication.yaml"
-# In a real Istio environment, uncomment:
-# kubectl apply -f /tmp/cks-q02/peer-authentication.yaml
-echo "(Skipped — Istio CRDs not installed in this environment)"
+if kubectl get crd peerauthentications.security.istio.io &>/dev/null; then
+  kubectl apply -f /tmp/cks-q02/peer-authentication.yaml
+else
+  echo "⚠️  Istio CRDs not found — run 'bash install-prereqs.sh' to install Istio."
+  echo "    Trying to apply anyway:"
+  kubectl apply -f /tmp/cks-q02/peer-authentication.yaml || true
+fi
 echo ""
 
 echo "STEP 3: Restart the deployment to inject sidecar"
