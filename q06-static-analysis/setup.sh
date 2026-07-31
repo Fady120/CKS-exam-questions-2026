@@ -101,6 +101,11 @@ spec:
       serviceAccountName: default
 EOF
 
+# Record the original line counts so verify.sh can detect added/removed lines
+mkdir -p /tmp/cks-q06
+wc -l < /root/Dockerfile > /tmp/cks-q06/dockerfile.lines
+wc -l < /root/deploy.yaml > /tmp/cks-q06/deploy.lines
+
 echo ""
 echo "✅ Environment ready!"
 echo ""
