@@ -50,7 +50,7 @@ echo ""
 echo "Running connectivity tests..."
 
 WEB_POD=$(kubectl get pods -n frontend -l app=web -o jsonpath="{.items[0].metadata.name}" 2>/dev/null)
-MAL_POD=$(kubectl get pods -n backend -l app=malicious-app -o jsonpath="{.items[0].metadata.name}" 2>/dev/null)
+MAL_POD=$(kubectl get pods -n backend -l app=malicious -o jsonpath="{.items[0].metadata.name}" 2>/dev/null)
 API_SVC_IP=$(kubectl get svc api-server -n backend -o jsonpath="{.spec.clusterIP}" 2>/dev/null)
 
 if [ -n "$WEB_POD" ] && [ -n "$API_SVC_IP" ]; then
