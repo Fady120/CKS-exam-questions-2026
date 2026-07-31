@@ -70,13 +70,5 @@ echo "  /tmp/cks-q04/docker.service (simulates /lib/systemd/system/docker.servic
 echo ""
 
 echo "✅ Environment ready!"
-
-#!/bin/bash
-# ============================================================================
-# CKS REAL EXAM QUESTION 4: Secure Docker Daemon
-# ============================================================================
-
-set -e
-
 echo ""
 echo "Run 'bash verify.sh' after solving to check your answer."
