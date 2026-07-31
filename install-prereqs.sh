@@ -107,18 +107,20 @@ else
   fi
 fi
 
-# ── syft (Q05 — SBOM) ────────────────────────────────────────────────────
-log "syft (Q05 — SBOM Generation)"
-if command -v syft &>/dev/null; then
-  skip "syft $(syft version 2>/dev/null | head -1)"
+# ── bom (Q05 — SPDX SBOM) ────────────────────────────────────────────────────
+log "bom (Q05 — SPDX SBOM Generation)"
+if command -v bom &>/dev/null; then
+  skip "bom $(bom version 2>/dev/null | head -1)"
 else
-  curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin 2>/dev/null \
-    && ok "syft installed" \
-    || fail "syft install failed"
+  BOM_VER="v0.6.0"
+  curl -fsSL "https://github.com/kubernetes-sigs/bom/releases/download/${BOM_VER}/bom-amd64-linux" -o /usr/local/bin/bom 2>/dev/null \
+    && chmod +x /usr/local/bin/bom \
+    && ok "bom ${BOM_VER} installed" \
+    || fail "bom install failed"
 fi
 
-# ── trivy (Q05 — Vulnerability Scanning) ─────────────────────────────────
-log "trivy (Q05 — Image Scanning)"
+# ── trivy (optional — image vulnerability scanning) ─────────────────────────────────
+log "trivy (optional — Image Scanning)"
 if command -v trivy &>/dev/null; then
   skip "trivy $(trivy --version 2>/dev/null | head -1)"
 else
@@ -173,12 +175,10 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: registry.k8s.io/e2e-test-images/agnhost:2.45
+        image: flavio/kube-image-bouncer:latest
         args:
-        - webhook
-        - --tls-cert-file=/etc/webhook/certs/tls.crt
-        - --tls-private-key-file=/etc/webhook/certs/tls.key
-        - --deny-name=nginx:latest
+        - --cert=/etc/webhook/certs/tls.crt
+        - --key=/etc/webhook/certs/tls.key
         ports:
         - containerPort: 1323
           protocol: TCP
@@ -206,6 +206,7 @@ spec:
 WEBHOOK_EOF
 
   # Copy the CA cert for the admission config
+  mkdir -p /etc/kubernetes/admission
   cp /etc/kubernetes/webhook-certs/webhook.crt /etc/kubernetes/admission/webhook-ca.crt 2>/dev/null || true
   if kubectl get deploy image-bouncer-webhook -n default &>/dev/null 2>&1; then
     ok "Image Bouncer Webhook deployed"
