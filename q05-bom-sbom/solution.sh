@@ -76,22 +76,16 @@ echo ""
 
 echo "STEP 4: Generate SPDX SBOM report"
 echo "--------"
-echo "Using 'bom' tool (pre-installed in CKS exam environment):"
-echo '$ bom generate -i alpine:3.16.1 -o /root/sbom-report.spdx'
-echo ""
-echo "Alternative using 'syft':"
-echo '$ syft alpine:3.16.1 -o spdx > /root/sbom-report.spdx'
+echo "Using the 'bom' tool (sigs.k8s.io/bom — pre-installed in the CKS exam environment):"
+echo '$ bom generate --image alpine:3.16.1 --output /root/sbom-report.spdx'
 echo ""
 
-# Try to use bom if available
+# Generate the SBOM with bom
 if command -v bom &>/dev/null; then
-  bom generate -i alpine:3.16.1 -o /root/sbom-report.spdx
-  echo "SBOM saved to /root/sbom-report.spdx"
-elif command -v syft &>/dev/null; then
-  syft alpine:3.16.1 -o spdx > /root/sbom-report.spdx
+  bom generate --image alpine:3.16.1 --output /root/sbom-report.spdx
   echo "SBOM saved to /root/sbom-report.spdx"
 else
-  echo "(bom/syft not installed — in the exam, one of these tools will be available)"
+  echo "(bom not installed — run 'bash install-prereqs.sh' from the project root)"
   echo "Creating placeholder..."
   echo "SPDXVersion: SPDX-2.3" > /root/sbom-report.spdx
   echo "DataLicense: CC0-1.0" >> /root/sbom-report.spdx
@@ -113,6 +107,6 @@ echo ""
 echo "KEY POINTS:"
 echo "  1. Exec into containers: kubectl exec <pod> -c <container> -- apk list <pkg>"
 echo "  2. Remove the container from deployment YAML, then kubectl apply"
-echo "  3. Use 'bom generate -i <image> -o <output>' for SPDX format"
-echo "  4. Alternative: 'syft <image> -o spdx > <output>'"
+echo "  3. Use 'bom generate --image <image> --output <output>' for SPDX format"
+echo "  4. 'bom generate' can also take a directory (-d) or file (-f) as input"
 echo "  5. The 'bom' tool should be pre-installed in the CKS exam env"
