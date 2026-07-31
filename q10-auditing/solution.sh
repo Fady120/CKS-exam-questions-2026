@@ -67,7 +67,7 @@ if [ -f "$APISERVER" ]; then
     fi
 
     # Add volumes (inside spec.volumes)
-    if ! grep -q "name: audit-policy" "$APISERVER" || true; then
+    if ! grep -q "path: /etc/kubernetes/audit" "$APISERVER"; then
       sed -i '/volumes:/a\  - hostPath:\n      path: /etc/kubernetes/audit\n      type: DirectoryOrCreate\n    name: audit-policy\n  - hostPath:\n      path: /var/log/kubernetes/audit\n      type: DirectoryOrCreate\n    name: audit-log' "$APISERVER"
     fi
 
