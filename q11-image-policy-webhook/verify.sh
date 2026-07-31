@@ -35,11 +35,11 @@ check "Webhook TLS secret has tls.key" \
 check "Webhook deployment exists" \
   'kubectl get deploy image-bouncer-webhook -n default >/dev/null 2>&1'
 
-check "Webhook container uses tls-cert-file arg" \
-  'kubectl get deploy image-bouncer-webhook -n default -o jsonpath="{.spec.template.spec.containers[0].args}" 2>/dev/null | grep -q "--tls-cert-file=/etc/webhook/certs/tls.crt"'
+check "Webhook container uses the TLS cert arg" \
+  'kubectl get deploy image-bouncer-webhook -n default -o jsonpath="{.spec.template.spec.containers[0].args}" 2>/dev/null | grep -q -- "--cert=/etc/webhook/certs/tls.crt"'
 
-check "Webhook container uses tls-private-key-file arg" \
-  'kubectl get deploy image-bouncer-webhook -n default -o jsonpath="{.spec.template.spec.containers[0].args}" 2>/dev/null | grep -q "--tls-private-key-file=/etc/webhook/certs/tls.key"'
+check "Webhook container uses the TLS key arg" \
+  'kubectl get deploy image-bouncer-webhook -n default -o jsonpath="{.spec.template.spec.containers[0].args}" 2>/dev/null | grep -q -- "--key=/etc/webhook/certs/tls.key"'
 
 check "Webhook deployment mounts webhook cert secret" \
   'kubectl get deploy image-bouncer-webhook -n default -o jsonpath="{.spec.template.spec.volumes[?(@.name==\"webhook-certs\")].secret.secretName}" 2>/dev/null | grep -q "webhook-tls"'
