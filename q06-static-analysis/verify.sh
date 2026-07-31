@@ -34,9 +34,14 @@ check "deploy.yaml does NOT have 'readOnlyRootFilesystem: false'" \
 # Verify no lines were added or removed (same line count)
 DOCKERFILE_LINES=$(wc -l < /root/Dockerfile 2>/dev/null)
 DEPLOY_LINES=$(wc -l < /root/deploy.yaml 2>/dev/null)
+EXPECTED_DOCKERFILE_LINES=$(cat /tmp/cks-q06/dockerfile.lines 2>/dev/null || echo 32)
+EXPECTED_DEPLOY_LINES=$(cat /tmp/cks-q06/deploy.lines 2>/dev/null || echo 35)
 
 check "Dockerfile has same number of lines (no lines added/removed)" \
-  '[ "$DOCKERFILE_LINES" -eq 18 ] || [ "$DOCKERFILE_LINES" -eq 19 ] || [ "$DOCKERFILE_LINES" -eq 20 ]'
+  '[ "$DOCKERFILE_LINES" -eq "$EXPECTED_DOCKERFILE_LINES" ]'
+
+check "deploy.yaml has same number of lines (no lines added/removed)" \
+  '[ "$DEPLOY_LINES" -eq "$EXPECTED_DEPLOY_LINES" ]'
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
