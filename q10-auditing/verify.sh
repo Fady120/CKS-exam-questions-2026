@@ -27,11 +27,11 @@ check "Audit policy file exists at $POLICY_FILE" \
 
 # Check policy has rules for Secrets
 check "Audit policy has rule for Secrets at Metadata level" \
-  'grep -A5 "Secret" "$POLICY_FILE" 2>/dev/null | grep -qi "Metadata"'
+  'grep -iA5 "secret" "$POLICY_FILE" 2>/dev/null | grep -qi "Metadata"'
 
 # Check policy has rules for Pods
 check "Audit policy has rule for Pods" \
-  'grep -q "pods\|Pod" "$POLICY_FILE" 2>/dev/null'
+  'grep -qi "pods" "$POLICY_FILE" 2>/dev/null'
 
 # Check apiserver has audit-policy-file flag
 check "kube-apiserver has --audit-policy-file flag" \
