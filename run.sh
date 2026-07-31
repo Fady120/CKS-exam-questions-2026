@@ -6,6 +6,7 @@
 #   bash run.sh           — List all questions
 #   bash run.sh 1         — Setup question 1
 #   bash run.sh 1 solve   — Show solution for question 1
+#   bash run.sh 1 verify — Verify question 1
 #   bash run.sh all       — Setup all questions at once
 # ============================================================================
 
@@ -52,6 +53,7 @@ list_questions() {
   echo "Usage:"
   echo "  bash run.sh <number>         — Setup a question"
   echo "  bash run.sh <number> solve   — Show the solution"
+  echo "  bash run.sh <number> verify  — Run the verification checks"
   echo "  bash run.sh all              — Setup all questions"
   echo ""
 }
@@ -68,7 +70,19 @@ run_question() {
 
   IFS='|' read -r dir desc <<< "${QUESTIONS[$idx]}"
 
-  if [ "$mode" = "solve" ] || [ "$mode" = "solution" ]; then
+  if [ "$mode" = "verify" ] || [ "$mode" = "check" ]; then
+
+    if [ -f "${SCRIPT_DIR}/${dir}/verify.sh" ]; then
+
+      bash "${SCRIPT_DIR}/${dir}/verify.sh"
+
+    else
+
+      echo "❌ Verify script not found: ${dir}/verify.sh"
+
+    fi
+
+  elif [ "$mode" = "solve" ] || [ "$mode" = "solution" ]; then
     if [ -f "${SCRIPT_DIR}/${dir}/solution.sh" ]; then
       bash "${SCRIPT_DIR}/${dir}/solution.sh"
     else
