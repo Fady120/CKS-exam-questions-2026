@@ -21,7 +21,7 @@ echo ""
 CONTAINERS=$(kubectl get deploy alpine-multi -n apps -o jsonpath="{.spec.template.spec.containers[*].name}" 2>/dev/null)
 
 check "container-c (vulnerable alpine:3.16.1) is removed from deployment" \
-  'echo "$CONTAINERS" | grep -v -q "container-c"'
+  '[ -n "$CONTAINERS" ] && ! echo "$CONTAINERS" | grep -q "container-c"'
 
 check "container-a still exists in deployment" \
   'echo "$CONTAINERS" | grep -q "container-a"'
@@ -43,6 +43,9 @@ check "SBOM report is not empty" \
 # Check SBOM report contains SPDX content
 check "SBOM report contains SPDX format data" \
   'grep -qi "spdx\|SPDXRef\|DocumentNamespace" /root/sbom-report.spdx 2>/dev/null'
+
+check "SBOM report references the alpine image" \
+  'grep -qi "alpine" /root/sbom-report.spdx 2>/dev/null'
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
