@@ -50,10 +50,10 @@ spec:
         app: web
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.25
-        ports:
-        - containerPort: 80
+      # busybox is used so the pod ships 'wget' for the connectivity tests
+      - name: client
+        image: busybox:1.36
+        command: ["sh", "-c", "sleep 3600"]
 ---
 apiVersion: apps/v1
 kind: Deployment
