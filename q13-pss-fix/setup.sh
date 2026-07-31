@@ -51,9 +51,10 @@ spec:
     spec:
       containers:
       - name: web
-        image: nginx:1.25
+        image: hashicorp/http-echo:0.2.3
+        args: ["-listen=:8080", "-text=secure-web"]
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         securityContext:
           privileged: true
           runAsUser: 0
