@@ -58,11 +58,10 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: registry.k8s.io/e2e-test-images/agnhost:2.45
+        image: flavio/kube-image-bouncer:latest
         args:
-        - webhook
-        - --tls-cert-file=/etc/webhook/certs/tls.crt
-        - --tls-private-key-file=/etc/webhook/certs/tls.key
+        - --cert=/etc/webhook/certs/tls.crt
+        - --key=/etc/webhook/certs/tls.key
         ports:
         - containerPort: 1323
           protocol: TCP
@@ -164,5 +163,11 @@ echo "     Copy/paste this value: https://image-bouncer-webhook.default.svc:1323
 echo "  3. kube-apiserver needs ImagePolicyWebhook admission plugin enabled"
 echo "  4. kube-apiserver needs --admission-control-config-file flag"
 echo "  5. kube-apiserver needs BOTH volume mount and hostPath volume for /etc/kubernetes/admission"
+echo ""
+echo "NOTE:"
+echo "  The webhook server (kube-image-bouncer) rejects any image using the"
+echo "  ':latest' tag. With defaultAllow: false the apiserver also rejects"
+echo "  every image if the webhook cannot be reached, so keep a backup of"
+echo "  /etc/kubernetes/manifests/kube-apiserver.yaml before editing it."
 echo ""
 echo "Run 'bash verify.sh' after solving to check your answer."
