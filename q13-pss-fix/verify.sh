@@ -29,25 +29,38 @@ check "Pods are running in 'restricted' namespace" \
   'kubectl get pods -n restricted --no-headers 2>/dev/null | grep -q "Running"'
 
 # Check security context fixes
-DEPLOY_JSON=$(kubectl get deploy -n restricted -o json 2>/dev/null)
+# Read the actual field values with jsonpath instead of grepping formatted JSON,
+# which never matched: kubectl prints "allowPrivilegeEscalation": false (quoted key + space).
+jp() { kubectl get deploy -n restricted -o jsonpath="$1" 2>/dev/null; }
+CTR=".items[*].spec.template.spec.containers[*].securityContext"
+POD=".items[*].spec.template.spec.securityContext"
+
+CTR_APE=$(jp "{$CTR.allowPrivilegeEscalation}")
+CTR_RANR=$(jp "{$CTR.runAsNonRoot}")
+POD_RANR=$(jp "{$POD.runAsNonRoot}")
+CTR_DROP=$(jp "{$CTR.capabilities.drop}")
+CTR_PRIV=$(jp "{$CTR.privileged}")
+CTR_RAU=$(jp "{$CTR.runAsUser}")
+POD_RAU=$(jp "{$POD.runAsUser}")
+SECCOMP=$(jp "{$CTR.seccompProfile.type} {$POD.seccompProfile.type}")
 
 check "Container has allowPrivilegeEscalation: false" \
-  'echo "$DEPLOY_JSON" | grep -q "\"allowPrivilegeEscalation\":false\|allowPrivilegeEscalation: false"'
+'[ -n "$CTR_APE" ] && ! echo "$CTR_APE" | grep -qw "true"'
 
-check "Container has runAsNonRoot: true" \
-  'echo "$DEPLOY_JSON" | grep -q "\"runAsNonRoot\":true\|runAsNonRoot: true"'
+check "runAsNonRoot: true (container or pod level)" \
+'echo "$CTR_RANR $POD_RANR" | grep -qw "true"'
 
 check "Container drops ALL capabilities" \
-  'echo "$DEPLOY_JSON" | grep -q "ALL"'
+'echo "$CTR_DROP" | grep -q "ALL"'
 
 check "Container does NOT have privileged: true" \
-  '! echo "$DEPLOY_JSON" | grep -q "\"privileged\":true\|privileged: true"'
+'! echo "$CTR_PRIV" | grep -qw "true"'
 
 check "Container does NOT run as user 0 (root)" \
-  '! echo "$DEPLOY_JSON" | grep -q "\"runAsUser\":0\|runAsUser: 0"'
+'! echo "$CTR_RAU $POD_RAU" | grep -qw "0"'
 
-check "Container has seccompProfile set" \
-  'echo "$DEPLOY_JSON" | grep -q "seccompProfile"'
+check "seccompProfile is set (RuntimeDefault or Localhost)" \
+'echo "$SECCOMP" | grep -Eq "RuntimeDefault|Localhost"'
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
