@@ -73,9 +73,21 @@ check "kube-apiserver has volumeMount for /etc/kubernetes/admission" \
 check "kube-apiserver has hostPath volume for /etc/kubernetes/admission" \
   'grep -q "path: /etc/kubernetes/admission" "$APISERVER" 2>/dev/null'
 
-# Check apiserver is still running
-check "kube-apiserver pod is running after changes" \
-  'kubectl get pods -n kube-system -l component=kube-apiserver --no-headers 2>/dev/null | grep -q "Running"'
+# Check apiserver is healthy after the changes (the static pod restarts on manifest edit)
+apiserver_ready() {
+local deadline=$((SECONDS + 120)) ready
+while [ "$SECONDS" -lt "$deadline" ]; do
+if kubectl get --raw='/readyz' 2>/dev/null | grep -q '^ok$'; then
+ready=$(kubectl get pods -n kube-system -l component=kube-apiserver -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
+case "$ready" in *True*) return 0 ;; esac
+fi
+sleep 3
+done
+return 1
+}
+
+check "kube-apiserver is healthy and its static pod is Ready after changes" \
+'apiserver_ready'
 
 # Functional test: try to create a pod with denied image
 echo ""
